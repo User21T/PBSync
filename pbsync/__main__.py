@@ -891,7 +891,7 @@ def main(argv):
                 True,
             ),
             "package_pdbs": ("project/packagepdbs", None, False, True),
-            "publish_publishers": ("publish/publisher", None, [""], False),
+            "publish_publishers": ("publish/publisher", None, [], False),
             "publish_stagedir": ("publish/stagedir", None, "Saved/StagedBuilds", True),
             "dispatch_config": ("dispatch/config", None, "", True),
             "butler_project": ("butler/project", None, "", True),
