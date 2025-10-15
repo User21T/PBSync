@@ -13,7 +13,7 @@ def setup():
     http = requests.Session()
     http.mount("https://", adapter)
 
-def download(url: str):
+def download(url: str, downloaded_file: str):
     setup()
     response = http.get(url, stream=True)
 
