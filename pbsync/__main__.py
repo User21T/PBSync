@@ -3,7 +3,6 @@ import multiprocessing
 import os
 import os.path
 import platform
-import requests
 import sys
 import shutil
 import subprocess
@@ -12,8 +11,6 @@ import time
 import webbrowser
 from functools import partial
 from pathlib import Path
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
 
 from pbpy import (
     pbbutler,
@@ -21,6 +18,7 @@ from pbpy import (
     pbdispatch,
     pbgh,
     pbgit,
+    pbhttp,
     pblog,
     pbpy_version,
     pbsteamcmd,
@@ -36,16 +34,6 @@ except ImportError:
     from pbsync import pbsync_version
 
 default_config_name = "PBSync.xml"
-
-retry_strategy = Retry(
-    total=5,  # Maximum number of retries
-    status_forcelist=[429, 500, 502, 503, 504],  # Retry on these status codes
-    backoff_factor=1  # Wait 1 sec before retrying, then increase by 1 sec each retry
-)
-
-adapter = HTTPAdapter(max_retries=retry_strategy)
-http = requests.Session()
-http.mount("https://", adapter)
 
 def check_gh_cli():
     try:
@@ -70,14 +58,7 @@ def install_gh_cli():
             pblog.error("Your operation system is not supported")
             return None
 
-    response = http.get(url, stream=True)
-
-    try:
-        with open(downloaded_file, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=10 * 1024):
-                file.write(chunk)
-    except OSError as e:  # For file I/O errors (e.g., disk full, permission denied)
-        pblog.error(f"File I/O error: {e}")
+    pbhttp.download(url)
 
     # Install GitHub CLI
     try:
@@ -112,7 +93,6 @@ def config_handler(config_var, config_parser_func):
 
 
 def sync_handler(sync_val: str, repository_val=None):
-
     sync_val = sync_val.lower()
 
     if sync_val == "all" or sync_val == "force" or sync_val == "partial":
@@ -984,3 +964,4 @@ if __name__ == "__main__":
         # Working directory fix for scripts calling PBSync from Scripts folder
         os.chdir("..")
     main(sys.argv[1:])
+
